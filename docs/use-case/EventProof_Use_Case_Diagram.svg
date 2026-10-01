@@ -1,0 +1,322 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 1020" width="100%" height="100%" style="background-color: #FFFFFF; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+  <defs>
+    <!-- Filter for soft clean shadow -->
+    <filter id="card-shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.08"/>
+    </filter>
+
+    <!-- Arrow Markers -->
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#1e3a5f"/>
+    </marker>
+    <marker id="arrow-dashed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9" fill="none" stroke="#2563eb" stroke-width="1.6"/>
+    </marker>
+  </defs>
+
+  <style>
+    .title-main { font-size: 24px; font-weight: 800; fill: #1e3a5f; text-anchor: middle; }
+    .title-sub { font-size: 13.5px; fill: #475569; text-anchor: middle; font-weight: 500; }
+    .system-border { fill: #ffffff; stroke: #334155; stroke-width: 2.2; }
+    .actor-name { font-size: 13px; font-weight: 700; fill: #0f172a; text-anchor: middle; }
+    .actor-stroke { stroke: #1e293b; stroke-width: 2; fill: none; stroke-linecap: round; }
+    .actor-head { fill: #ffffff; stroke: #1e293b; stroke-width: 2; }
+    .usecase-core { fill: #f0f7ff; stroke: #1d4ed8; stroke-width: 1.8; rx: 30; }
+    .usecase-std { fill: #ffffff; stroke: #334155; stroke-width: 1.6; rx: 30; }
+    .usecase-text { font-size: 12.5px; fill: #0f172a; text-anchor: middle; font-weight: 600; }
+    .usecase-text-sm { font-size: 11px; fill: #334155; text-anchor: middle; font-weight: 600; }
+    .assoc-line { stroke: #334155; stroke-width: 1.6; fill: none; }
+    .dep-line { stroke: #2563eb; stroke-width: 1.4; stroke-dasharray: 5 4; fill: none; }
+    .dep-text { font-size: 11px; fill: #1d4ed8; font-weight: 600; text-anchor: middle; }
+    .note-box { fill: #ffffff; stroke: #64748b; stroke-width: 1.2; rx: 3; }
+    .note-text { font-size: 10.5px; fill: #334155; }
+    .status-badge { font-size: 10px; font-weight: 700; fill: #64748b; text-anchor: middle; letter-spacing: 0.5px; }
+  </style>
+
+  <!-- ========================================== -->
+  <!-- SYSTEM BOUNDARY BOX -->
+  <!-- ========================================== -->
+  <rect x="150" y="25" width="1160" height="960" class="system-border"/>
+
+  <!-- System Header Titles -->
+  <text x="730" y="65" class="title-main">EventProof Use Case Diagram</text>
+  <text x="730" y="88" class="title-sub">Offline-First Attendance and Verifiable E-Certificate Management System</text>
+
+  <!-- ========================================== -->
+  <!-- ACTORS (Left & Right) -->
+  <!-- ========================================== -->
+
+  <!-- 1. Student / Participant (Left Top) -->
+  <g transform="translate(60, 230)">
+    <circle cx="20" cy="20" r="14" class="actor-head"/>
+    <line x1="20" y1="34" x2="20" y2="70" class="actor-stroke"/>
+    <line x1="-5" y1="46" x2="45" y2="46" class="actor-stroke"/>
+    <line x1="20" y1="70" x2="-2" y2="105" class="actor-stroke"/>
+    <line x1="20" y1="70" x2="42" y2="105" class="actor-stroke"/>
+    <text x="20" y="125" class="actor-name">Student /</text>
+    <text x="20" y="140" class="actor-name">Participant</text>
+  </g>
+
+  <!-- 2. Public Verifier (Left Bottom) -->
+  <g transform="translate(60, 840)">
+    <circle cx="20" cy="20" r="14" class="actor-head"/>
+    <line x1="20" y1="34" x2="20" y2="70" class="actor-stroke"/>
+    <line x1="-5" y1="46" x2="45" y2="46" class="actor-stroke"/>
+    <line x1="20" y1="70" x2="-2" y2="105" class="actor-stroke"/>
+    <line x1="20" y1="70" x2="42" y2="105" class="actor-stroke"/>
+    <text x="20" y="125" class="actor-name">Public</text>
+    <text x="20" y="140" class="actor-name">Verifier</text>
+  </g>
+
+  <!-- 3. Event Manager (Right Top) -->
+  <g transform="translate(1380, 150)">
+    <circle cx="20" cy="20" r="14" class="actor-head"/>
+    <line x1="20" y1="34" x2="20" y2="70" class="actor-stroke"/>
+    <line x1="-5" y1="46" x2="45" y2="46" class="actor-stroke"/>
+    <line x1="20" y1="70" x2="-2" y2="105" class="actor-stroke"/>
+    <line x1="20" y1="70" x2="42" y2="105" class="actor-stroke"/>
+    <text x="20" y="125" class="actor-name">Event Manager</text>
+  </g>
+
+  <!-- 4. Scanner Staff (Right Middle) -->
+  <g transform="translate(1380, 420)">
+    <circle cx="20" cy="20" r="14" class="actor-head"/>
+    <line x1="20" y1="34" x2="20" y2="70" class="actor-stroke"/>
+    <line x1="-5" y1="46" x2="45" y2="46" class="actor-stroke"/>
+    <line x1="20" y1="70" x2="-2" y2="105" class="actor-stroke"/>
+    <line x1="20" y1="70" x2="42" y2="105" class="actor-stroke"/>
+    <text x="20" y="125" class="actor-name">Scanner Staff</text>
+  </g>
+
+  <!-- 5. System Admin (Right Bottom) -->
+  <g transform="translate(1380, 750)">
+    <circle cx="20" cy="20" r="14" class="actor-head"/>
+    <line x1="20" y1="34" x2="20" y2="70" class="actor-stroke"/>
+    <line x1="-5" y1="46" x2="45" y2="46" class="actor-stroke"/>
+    <line x1="20" y1="70" x2="-2" y2="105" class="actor-stroke"/>
+    <line x1="20" y1="70" x2="42" y2="105" class="actor-stroke"/>
+    <text x="20" y="125" class="actor-name">System Admin</text>
+  </g>
+
+  <!-- ========================================== -->
+  <!-- USE CASES: TOP RIGHT (Event Manager) -->
+  <!-- ========================================== -->
+  <!-- Manage Events -->
+  <ellipse cx="1120" cy="75" rx="115" ry="20" class="usecase-std"/>
+  <text x="1120" y="79" class="usecase-text">Manage Events</text>
+
+  <!-- Manage Students -->
+  <ellipse cx="1120" cy="125" rx="115" ry="20" class="usecase-std"/>
+  <text x="1120" y="129" class="usecase-text">Manage Students</text>
+
+  <!-- Register Students to Event -->
+  <ellipse cx="1120" cy="175" rx="120" ry="22" class="usecase-std"/>
+  <text x="1120" y="174" class="usecase-text-sm">Register Students</text>
+  <text x="1120" y="187" class="usecase-text-sm">to Event</text>
+
+  <!-- Generate Event QR Passes -->
+  <ellipse cx="1120" cy="230" rx="120" ry="22" class="usecase-std"/>
+  <text x="1120" y="234" class="usecase-text">Generate Event QR Passes</text>
+
+  <!-- Set Up Scanner -->
+  <ellipse cx="1120" cy="285" rx="115" ry="20" class="usecase-std"/>
+  <text x="1120" y="289" class="usecase-text">Set Up Scanner</text>
+
+  <!-- ========================================== -->
+  <!-- USE CASES: MIDDLE RIGHT (Scanner Staff) -->
+  <!-- ========================================== -->
+  <!-- Scan Student QR -->
+  <ellipse cx="1140" cy="385" rx="110" ry="20" class="usecase-std"/>
+  <text x="1140" y="389" class="usecase-text">Scan Student QR</text>
+
+  <!-- Find Student Manually -->
+  <ellipse cx="1140" cy="445" rx="115" ry="20" class="usecase-std"/>
+  <text x="1140" y="449" class="usecase-text">Find Student Manually</text>
+
+  <!-- Sync Offline Attendance -->
+  <ellipse cx="1140" cy="505" rx="118" ry="20" class="usecase-std"/>
+  <text x="1140" y="509" class="usecase-text">Sync Offline Attendance</text>
+  <text x="1140" y="534" font-size="11" fill="#475569" text-anchor="middle">When connection returns</text>
+
+  <!-- Monitor Live Attendance -->
+  <ellipse cx="1140" cy="570" rx="118" ry="20" class="usecase-std"/>
+  <text x="1140" y="574" class="usecase-text">Monitor Live Attendance</text>
+
+  <!-- ========================================== -->
+  <!-- USE CASES: BOTTOM RIGHT (System Admin) -->
+  <!-- ========================================== -->
+  <!-- View Certificate Eligibility -->
+  <ellipse cx="1140" cy="635" rx="120" ry="20" class="usecase-std"/>
+  <text x="1140" y="639" class="usecase-text">View Certificate Eligibility</text>
+
+  <!-- Configure Certificate -->
+  <ellipse cx="1140" cy="685" rx="115" ry="20" class="usecase-std"/>
+  <text x="1140" y="689" class="usecase-text">Configure Certificate</text>
+
+  <!-- Manage Certificate Templates -->
+  <ellipse cx="1140" cy="735" rx="122" ry="20" class="usecase-std"/>
+  <text x="1140" y="739" class="usecase-text">Manage Certificate Templates</text>
+
+  <!-- Issue Certificate -->
+  <ellipse cx="1140" cy="790" rx="115" ry="20" class="usecase-core"/>
+  <text x="1140" y="794" class="usecase-text">Issue Certificate</text>
+
+  <!-- Bulk Issue Certificates -->
+  <ellipse cx="1140" cy="870" rx="118" ry="20" class="usecase-std"/>
+  <text x="1140" y="874" class="usecase-text">Bulk Issue Certificates</text>
+
+  <!-- Revoke / Restore Certificate -->
+  <ellipse cx="1140" cy="935" rx="122" ry="20" class="usecase-std"/>
+  <text x="1140" y="939" class="usecase-text">Revoke / Restore Certificate</text>
+
+  <!-- ========================================== -->
+  <!-- USE CASES: LEFT & CORE FLOW -->
+  <!-- ========================================== -->
+  <!-- Present Event QR -->
+  <ellipse cx="360" cy="125" rx="105" ry="22" class="usecase-std"/>
+  <text x="360" y="129" class="usecase-text">Present Event QR</text>
+
+  <!-- Check In to Event -->
+  <ellipse cx="360" cy="245" rx="105" ry="22" class="usecase-core"/>
+  <text x="360" y="249" class="usecase-text">Check In to Event</text>
+
+  <!-- Request Manual Lookup -->
+  <ellipse cx="360" cy="370" rx="110" ry="22" class="usecase-std"/>
+  <text x="360" y="374" class="usecase-text">Request Manual Lookup</text>
+
+  <!-- Identify Participant (Center) -->
+  <ellipse cx="710" cy="305" rx="108" ry="22" class="usecase-core"/>
+  <text x="710" y="309" class="usecase-text">Identify Participant</text>
+
+  <!-- Confirm Attendance (Center) -->
+  <ellipse cx="710" cy="475" rx="108" ry="22" class="usecase-core"/>
+  <text x="710" y="479" class="usecase-text">Confirm Attendance</text>
+
+  <!-- Record Attendance (Center) -->
+  <ellipse cx="710" cy="570" rx="105" ry="20" class="usecase-std"/>
+  <text x="710" y="574" class="usecase-text">Record Attendance</text>
+
+  <!-- Check Certificate Eligibility (Center-Bottom) -->
+  <ellipse cx="710" cy="670" rx="108" ry="22" class="usecase-core"/>
+  <text x="710" y="674" class="usecase-text">Check Certificate Eligibility</text>
+
+  <!-- Note for Certificate Eligibility -->
+  <g transform="translate(605, 710)">
+    <polygon points="0,0 200,0 210,10 210,36 0,36" class="note-box"/>
+    <polygon points="200,0 200,10 210,10" fill="#e2e8f0" stroke="#64748b" stroke-width="1"/>
+    <text x="15" y="18" class="note-text">Eligible only if registered</text>
+    <text x="15" y="30" class="note-text">and marked PRESENT.</text>
+  </g>
+
+  <!-- Generate Certificate PDF -->
+  <ellipse cx="710" cy="790" rx="112" ry="22" class="usecase-std"/>
+  <text x="710" y="794" class="usecase-text">Generate Certificate PDF</text>
+
+  <!-- Verify Certificate (Bottom Left) -->
+  <ellipse cx="360" cy="900" rx="105" ry="22" class="usecase-std"/>
+  <text x="360" y="904" class="usecase-text">Verify Certificate</text>
+
+  <!-- Check Certificate Status (Bottom Center) -->
+  <ellipse cx="710" cy="900" rx="112" ry="22" class="usecase-core"/>
+  <text x="710" y="904" class="usecase-text">Check Certificate Status</text>
+  <text x="710" y="942" class="status-badge">VALID / REVOKED / UNKNOWN / INVALID</text>
+
+  <!-- ========================================== -->
+  <!-- ACTOR ASSOCIATIONS (Solid Lines) -->
+  <!-- ========================================== -->
+  <!-- Student associations -->
+  <line x1="85" y1="270" x2="255" y2="135" class="assoc-line"/>
+  <line x1="85" y1="280" x2="255" y2="245" class="assoc-line"/>
+  <line x1="85" y1="295" x2="255" y2="365" class="assoc-line"/>
+
+  <!-- Public Verifier associations -->
+  <line x1="85" y1="895" x2="255" y2="900" class="assoc-line"/>
+
+  <!-- Event Manager associations -->
+  <line x1="1375" y1="190" x2="1235" y2="78" class="assoc-line"/>
+  <line x1="1375" y1="195" x2="1235" y2="125" class="assoc-line"/>
+  <line x1="1375" y1="205" x2="1240" y2="175" class="assoc-line"/>
+  <line x1="1375" y1="215" x2="1240" y2="230" class="assoc-line"/>
+  <line x1="1375" y1="225" x2="1235" y2="285" class="assoc-line"/>
+
+  <!-- Scanner Staff associations -->
+  <line x1="1375" y1="465" x2="1250" y2="388" class="assoc-line"/>
+  <line x1="1375" y1="475" x2="1255" y2="445" class="assoc-line"/>
+  <line x1="1375" y1="485" x2="1258" y2="505" class="assoc-line"/>
+  <line x1="1375" y1="495" x2="1258" y2="570" class="assoc-line"/>
+
+  <!-- System Admin associations -->
+  <line x1="1375" y1="790" x2="1260" y2="640" class="assoc-line"/>
+  <line x1="1375" y1="800" x2="1255" y2="685" class="assoc-line"/>
+  <line x1="1375" y1="810" x2="1262" y2="735" class="assoc-line"/>
+  <line x1="1375" y1="820" x2="1255" y2="790" class="assoc-line"/>
+  <line x1="1375" y1="835" x2="1258" y2="870" class="assoc-line"/>
+  <line x1="1375" y1="845" x2="1262" y2="935" class="assoc-line"/>
+
+  <!-- ========================================== -->
+  <!-- RELATIONSHIPS: EXTEND & INCLUDE (Dashed Lines) -->
+  <!-- ========================================== -->
+
+  <!-- Present Event QR --<<extend>>--> Check In to Event -->
+  <path d="M 360 147 L 360 223" class="dep-line" marker-end="url(#arrow-dashed)"/>
+  <rect x="365" y="168" width="145" height="34" fill="#ffffff" stroke="#e2e8f0" rx="3"/>
+  <text x="435" y="182" class="dep-text">&lt;&lt;extend&gt;&gt;</text>
+  <text x="435" y="196" font-size="10" fill="#475569" text-anchor="middle">[when student has QR]</text>
+
+  <!-- Request Manual Lookup --<<extend>>--> Check In to Event -->
+  <path d="M 360 348 L 360 267" class="dep-line" marker-end="url(#arrow-dashed)"/>
+  <rect x="365" y="295" width="165" height="34" fill="#ffffff" stroke="#e2e8f0" rx="3"/>
+  <text x="447" y="309" class="dep-text">&lt;&lt;extend&gt;&gt;</text>
+  <text x="447" y="323" font-size="10" fill="#475569" text-anchor="middle">[when QR is unavailable]</text>
+
+  <!-- Check In to Event --<<include>>--> Identify Participant -->
+  <path d="M 465 248 L 604 295" class="dep-line" marker-end="url(#arrow-dashed)"/>
+  <rect x="500" y="254" width="75" height="18" fill="#ffffff" rx="2"/>
+  <text x="537" y="267" class="dep-text">&lt;&lt;include&gt;&gt;</text>
+
+  <!-- Check In to Event --<<include>>--> Confirm Attendance -->
+  <path d="M 445 264 C 470 295, 510 425, 606 462" class="dep-line" marker-end="url(#arrow-dashed)"/>
+  <rect x="475" y="398" width="75" height="18" fill="#ffffff" rx="2"/>
+  <text x="512" y="411" class="dep-text">&lt;&lt;include&gt;&gt;</text>
+
+  <!-- Scan Student QR --<<include>>--> Identify Participant -->
+  <path d="M 1030 385 L 815 320" class="dep-line" marker-end="url(#arrow-dashed)"/>
+  <rect x="885" y="340" width="75" height="18" fill="#ffffff" rx="2"/>
+  <text x="922" y="353" class="dep-text">&lt;&lt;include&gt;&gt;</text>
+
+  <!-- Find Student Manually --<<include>>--> Identify Participant -->
+  <path d="M 1028 440 L 805 325" class="dep-line" marker-end="url(#arrow-dashed)"/>
+  <rect x="895" y="390" width="75" height="18" fill="#ffffff" rx="2"/>
+  <text x="932" y="403" class="dep-text">&lt;&lt;include&gt;&gt;</text>
+
+  <!-- Confirm Attendance --<<include>>--> Record Attendance -->
+  <path d="M 710 497 L 710 548" class="dep-line" marker-end="url(#arrow-dashed)"/>
+  <rect x="715" y="515" width="75" height="18" fill="#ffffff" rx="2"/>
+  <text x="752" y="528" class="dep-text">&lt;&lt;include&gt;&gt;</text>
+
+  <!-- Issue Certificate --<<include>>--> Check Certificate Eligibility -->
+  <path d="M 1030 782 L 812 682" class="dep-line" marker-end="url(#arrow-dashed)"/>
+  <rect x="890" y="720" width="75" height="18" fill="#ffffff" rx="2"/>
+  <text x="927" y="733" class="dep-text">&lt;&lt;include&gt;&gt;</text>
+
+  <!-- Issue Certificate --<<include>>--> Generate Certificate PDF -->
+  <path d="M 1025 790 L 822 790" class="dep-line" marker-end="url(#arrow-dashed)"/>
+  <rect x="900" y="781" width="75" height="18" fill="#ffffff" rx="2"/>
+  <text x="937" y="794" class="dep-text">&lt;&lt;include&gt;&gt;</text>
+
+  <!-- Bulk Issue Certificates --<<include>>--> Issue Certificate -->
+  <path d="M 1140 850 L 1140 812" class="dep-line" marker-end="url(#arrow-dashed)"/>
+  <rect x="1145" y="823" width="75" height="18" fill="#ffffff" rx="2"/>
+  <text x="1182" y="836" class="dep-text">&lt;&lt;include&gt;&gt;</text>
+
+  <!-- Bulk Issue Certificates --<<include>>--> Check Certificate Eligibility -->
+  <path d="M 1022 870 L 570 870 L 570 675 L 602 672" class="dep-line" marker-end="url(#arrow-dashed)"/>
+  <rect x="760" y="861" width="75" height="18" fill="#ffffff" rx="2"/>
+  <text x="797" y="874" class="dep-text">&lt;&lt;include&gt;&gt;</text>
+
+  <!-- Verify Certificate --<<include>>--> Check Certificate Status -->
+  <path d="M 465 900 L 598 900" class="dep-line" marker-end="url(#arrow-dashed)"/>
+  <rect x="508" y="891" width="75" height="18" fill="#ffffff" rx="2"/>
+  <text x="545" y="904" class="dep-text">&lt;&lt;include&gt;&gt;</text>
+
+</svg>

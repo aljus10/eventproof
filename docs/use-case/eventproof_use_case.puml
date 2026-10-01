@@ -1,0 +1,116 @@
+@startuml EventProof_Use_Case_Diagram
+!theme plain
+skinparam roundCorner 15
+skinparam defaultFontName "Segoe UI", Arial, sans-serif
+skinparam defaultFontSize 12
+skinparam usecaseFontSize 12
+skinparam actorFontSize 13
+skinparam packageFontSize 13
+skinparam shadowing false
+skinparam ArrowColor #2C3E50
+skinparam ArrowThickness 1.2
+skinparam rectangleBorderColor #7F8C8D
+skinparam rectangleBackgroundColor #FFFFFF
+
+' Actors
+left to right direction
+
+actor "Student /\nParticipant" as Student
+actor "Public\nVerifier" as Verifier
+
+actor "Event Manager" as Manager
+actor "Scanner Staff" as Scanner
+actor "System Admin" as Admin
+
+rectangle "EventProof Use Case Diagram\n==Offline-First Attendance and Verifiable E-Certificate Management System==" as EventProofSystem {
+
+    ' Student Side Use Cases
+    usecase "Present Event QR" as UC_PresentQR
+    usecase "Check In to Event" as UC_CheckIn
+    usecase "Request Manual Lookup" as UC_ManualLookup
+
+    ' Attendance Processing Core
+    usecase "Identify Participant" as UC_Identify
+    usecase "Confirm Attendance" as UC_ConfirmAtt
+    usecase "Record Attendance" as UC_RecordAtt
+
+    ' Event Manager Use Cases
+    usecase "Manage Events" as UC_ManageEvents
+    usecase "Manage Students" as UC_ManageStudents
+    usecase "Register Students\nto Event" as UC_RegisterStudents
+    usecase "Generate Event\nQR Passes" as UC_GenPasses
+    usecase "Set Up Scanner" as UC_SetupScanner
+
+    ' Scanner Staff Use Cases
+    usecase "Scan Student QR" as UC_ScanQR
+    usecase "Find Student Manually" as UC_FindManual
+    usecase "Sync Offline Attendance" as UC_SyncOffline
+    usecase "Monitor Live Attendance" as UC_MonitorLive
+    note bottom of UC_SyncOffline : When connection returns
+
+    ' Certificate & Governance Use Cases
+    usecase "View Certificate\nEligibility" as UC_ViewEligible
+    usecase "Configure Certificate" as UC_ConfigCert
+    usecase "Manage Certificate\nTemplates" as UC_ManageTemplates
+    usecase "Check Certificate\nEligibility" as UC_CheckEligible
+    note bottom of UC_CheckEligible : Eligible only if registered\nand marked PRESENT.
+
+    usecase "Generate Certificate PDF" as UC_GenPDF
+    usecase "Issue Certificate" as UC_IssueCert
+    usecase "Bulk Issue Certificates" as UC_BulkIssue
+    usecase "Revoke / Restore\nCertificate" as UC_RevokeRestore
+
+    ' Public Verification Use Cases
+    usecase "Verify Certificate" as UC_VerifyCert
+    usecase "Check Certificate Status" as UC_CheckCertStatus
+    note bottom of UC_CheckCertStatus : VALID / REVOKED / UNKNOWN / INVALID
+}
+
+' Actor Connections - Student
+Student -- UC_PresentQR
+Student -- UC_CheckIn
+Student -- UC_ManualLookup
+
+' Check-In Extends & Includes
+UC_PresentQR .> UC_CheckIn : <<extend>>\n[when student has QR]
+UC_ManualLookup .> UC_CheckIn : <<extend>>\n[when QR is unavailable]
+UC_CheckIn ..> UC_Identify : <<include>>
+UC_CheckIn ..> UC_ConfirmAtt : <<include>>
+UC_ConfirmAtt ..> UC_RecordAtt : <<include>>
+
+' Actor Connections - Event Manager
+UC_ManageEvents -- Manager
+UC_ManageStudents -- Manager
+UC_RegisterStudents -- Manager
+UC_GenPasses -- Manager
+UC_SetupScanner -- Manager
+
+' Actor Connections - Scanner Staff
+UC_ScanQR -- Scanner
+UC_FindManual -- Scanner
+UC_SyncOffline -- Scanner
+UC_MonitorLive -- Scanner
+
+' Scanner to Core
+UC_ScanQR ..> UC_Identify : <<include>>
+UC_FindManual ..> UC_Identify : <<include>>
+
+' Actor Connections - System Admin
+UC_ViewEligible -- Admin
+UC_ConfigCert -- Admin
+UC_ManageTemplates -- Admin
+UC_IssueCert -- Admin
+UC_BulkIssue -- Admin
+UC_RevokeRestore -- Admin
+
+' Certificate Includes
+UC_IssueCert ..> UC_CheckEligible : <<include>>
+UC_IssueCert ..> UC_GenPDF : <<include>>
+UC_BulkIssue ..> UC_IssueCert : <<include>>
+UC_BulkIssue ..> UC_CheckEligible : <<include>>
+
+' Actor Connections - Public Verifier
+Verifier -- UC_VerifyCert
+UC_VerifyCert ..> UC_CheckCertStatus : <<include>>
+
+@enduml

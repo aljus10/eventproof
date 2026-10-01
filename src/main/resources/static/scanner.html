@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>EventProof - Mobile Scanner</title>
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+  <main class="scanner-shell">
+
+    <!-- Mobile App Bar -->
+    <header class="scanner-top">
+      <div class="scanner-title-wrap">
+        <div class="brand-icon" style="width:34px; height:34px; font-size:0.95rem;" aria-hidden="true">EP</div>
+        <div class="scanner-title">EventProof Scanner</div>
+      </div>
+      <form action="/logout" method="post">
+        <button class="btn secondary small-btn" type="submit">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+          <span>Sign Out</span>
+        </button>
+      </form>
+    </header>
+
+    <!-- Flash Alert Container -->
+    <div id="scannerFlash" class="notice hidden" role="alert"></div>
+
+    <!-- Scanner Setup / Pairing Screen (when device not yet enrolled) -->
+    <section id="pairPanel" class="scanner-panel hidden">
+      <h2 style="margin-top:0;">Scanner Setup</h2>
+      <p class="muted small">This mobile device is not yet paired to an active event. Scan the pairing QR code displayed by the Event Manager or paste the code below.</p>
+      
+      <div class="field" style="margin-top:16px;">
+        <label for="pairingToken">Pairing Code</label>
+        <input id="pairingToken" placeholder="Paste scanner pairing token">
+      </div>
+      
+      <button id="pairBtn" class="btn full" style="margin-top:14px;">Pair This Phone</button>
+    </section>
+
+    <!-- Main Active Scanner Panel -->
+    <section id="scannerPanel" class="hidden">
+
+      <!-- Event & Connection Status HUD -->
+      <div class="scanner-panel">
+        <h2 id="eventName" style="margin:0 0 4px; font-size:1.35rem;">Loading Event...</h2>
+        <div class="muted small" id="eventVenue" style="margin-bottom:12px;"></div>
+
+        <div class="scanner-meta">
+          <div>
+            <b>Scanner Gate</b>
+            <span id="scannerName" style="font-weight:600; font-size:0.92rem;">—</span>
+          </div>
+
+          <div>
+            <b>Server Connection</b>
+            <span class="status-line">
+              <span id="connectionDot" class="dot"></span>
+              <span id="connectionText">CONNECTING</span>
+            </span>
+          </div>
+
+          <div>
+            <b>Offline Queue</b>
+            <span style="font-weight:700; font-size:1rem; color:var(--ink-primary);"><span id="pendingCount">0</span> pending sync</span>
+          </div>
+
+          <div>
+            <b>Cached Roster</b>
+            <span style="font-weight:600; font-size:0.92rem;"><span id="rosterCount">0</span> participants</span>
+          </div>
+        </div>
+
+        <div id="httpsHint" class="hidden" style="margin-top:12px; font-size:0.82rem; background:#eff6ff; border:1px solid #93c5fd; color:#1e40af; border-radius:8px; padding:10px 12px; line-height:1.4;">
+          💡 <b>Mobile Live Camera Tip:</b> Chrome restricts continuous live camera over HTTP. You can tap <b>"Snap QR Photo"</b> below without any flags, or switch to <a id="httpsLink" href="#" style="font-weight:700; color:#2563eb; text-decoration:underline;">HTTPS (Port 8443)</a> for live continuous streaming!
+        </div>
+      </div>
+
+      <!-- Scan & Camera Panel -->
+      <div class="scanner-panel">
+        <button id="scanBtn" class="btn big-action">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+            <circle cx="12" cy="13" r="4"></circle>
+          </svg>
+          <span id="scanBtnText">SCAN STUDENT QR</span>
+        </button>
+
+        <!-- Native Camera Snapshot (Works 100% on HTTP Without Any Chrome Flags!) -->
+        <input type="file" id="cameraFileInput" accept="image/*" capture="environment" style="display:none;">
+        <canvas id="qrCanvas" style="display:none;"></canvas>
+
+        <button id="snapPhotoBtn" class="btn secondary full" style="margin-top:10px; display:flex; align-items:center; justify-content:center; gap:8px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+            <circle cx="12" cy="13" r="4"></circle>
+          </svg>
+          <span>SNAP QR PHOTO (NO FLAGS NEEDED)</span>
+        </button>
+
+        <div id="cameraBox" class="hidden" style="margin-top:14px;">
+          <div class="camera-container">
+            <video id="camera" autoplay playsinline></video>
+            <div class="viewfinder-guide"></div>
+          </div>
+          <button id="stopCamera" class="btn secondary full" style="margin-top:10px;">Close Camera</button>
+        </div>
+
+        <div class="field" style="margin-top:18px;">
+          <label for="manualToken">Manual QR Token</label>
+          <input id="manualToken" class="mono" placeholder="Paste or type QR token (e.g. EP1.xxx)">
+        </div>
+        <button id="resolveManual" class="btn secondary full" style="margin-top:8px;">Resolve QR Token</button>
+      </div>
+
+      <!-- Student Roster Search Panel -->
+      <div class="scanner-panel">
+        <h3 style="margin-top:0;">Find Student</h3>
+        <div class="field">
+          <label for="studentSearch">Student ID or Name</label>
+          <input id="studentSearch" placeholder="Type at least 2 characters to search...">
+        </div>
+        <div id="searchResults" class="search-results"></div>
+      </div>
+
+      <!-- Resolved Participant & Confirmation Area -->
+      <div id="participantPanel" class="scanner-panel hidden"></div>
+
+    </section>
+
+  </main>
+
+  <script src="/js/jsqr.min.js"></script>
+  <script src="/js/scanner.js"></script>
+</body>
+</html>

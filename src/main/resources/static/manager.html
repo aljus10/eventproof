@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EventProof Manager - Event Workspace</title>
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+  <div class="app-shell">
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-brand-wrapper">
+        <div class="brand-icon" aria-hidden="true">EP</div>
+        <div class="brand-meta">
+          <span class="brand-title">EventProof</span>
+          <span class="brand-role">Event Manager</span>
+        </div>
+      </div>
+
+      <nav class="nav" aria-label="Main Navigation">
+        <button class="active" data-section="dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="3" width="7" height="9"></rect>
+            <rect x="14" y="3" width="7" height="5"></rect>
+            <rect x="14" y="12" width="7" height="9"></rect>
+            <rect x="3" y="16" width="7" height="5"></rect>
+          </svg>
+          <span>Dashboard</span>
+        </button>
+
+        <button data-section="events">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          <span>Events</span>
+        </button>
+
+        <button data-section="students">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+          <span>Students</span>
+        </button>
+
+        <button data-section="attendance">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          <span>Attendance</span>
+        </button>
+
+        <button data-section="scanners">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+            <line x1="12" y1="18" x2="12.01" y2="18"></line>
+          </svg>
+          <span>Scanners</span>
+        </button>
+      </nav>
+
+      <footer>
+        <form action="/logout" method="post">
+          <button class="logout-btn" type="submit">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+            <span>Sign Out</span>
+          </button>
+        </form>
+      </footer>
+    </aside>
+
+    <!-- Main Workspace Content -->
+    <main class="main">
+      <div id="flash" class="notice hidden" role="alert"></div>
+
+      <!-- Section: Dashboard -->
+      <section id="dashboard" class="section active">
+        <div class="page-head">
+          <div>
+            <h1>Dashboard</h1>
+            <div class="muted">Overview of your academic events, attendees, and check-in metrics.</div>
+          </div>
+        </div>
+        <div class="grid-4" id="metrics"></div>
+      </section>
+
+      <!-- Section: Events -->
+      <section id="events" class="section">
+        <div class="page-head">
+          <div>
+            <h1>Events</h1>
+            <div class="muted">Create and manage institutional events, venues, and attendance protocols.</div>
+          </div>
+        </div>
+
+        <!-- Institutional Event Maker Panel -->
+        <div class="panel" id="eventMakerPanel" style="padding:0; overflow:hidden;">
+          <div style="padding:20px 24px 16px; border-bottom:1px solid var(--surface-border); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+            <div>
+              <h2 style="margin:0 0 2px; font-size:1.15rem;">Institutional Event Maker</h2>
+              <div class="muted small" id="makerSubtitle">Step 1 of 4: Event Details</div>
+            </div>
+            <span class="badge" style="background:#eff6ff; color:#1d4ed8; font-weight:700; border:1px solid #bfdbfe;">OFFLINE-READY</span>
+          </div>
+
+          <!-- Stepper Progress Bar -->
+          <div class="wizard-stepper-bar">
+            <div class="wizard-step-pill active" data-step="1" id="stepPill1">
+              <span class="wizard-step-num">1</span>
+              <span>Details</span>
+            </div>
+            <div class="wizard-step-pill" data-step="2" id="stepPill2">
+              <span class="wizard-step-num">2</span>
+              <span>Participants</span>
+            </div>
+            <div class="wizard-step-pill" data-step="3" id="stepPill3">
+              <span class="wizard-step-num">3</span>
+              <span>Attendance</span>
+            </div>
+            <div class="wizard-step-pill" data-step="4" id="stepPill4">
+              <span class="wizard-step-num">4</span>
+              <span>Review</span>
+            </div>
+          </div>
+
+          <!-- Wizard Body: 4 Step Panels -->
+          <div class="wizard-body">
+
+            <!-- Step 1: Details -->
+            <div id="wizardStep1" class="wizard-step-content">
+              <div class="form-grid">
+                <div class="field span-2">
+                  <label style="font-weight:700;">Event Name *</label>
+                  <input id="wizEventName" placeholder="e.g. BSCS Annual Technology Colloquium" required>
+                </div>
+                <div class="field span-2">
+                  <label style="font-weight:700;">Organizer / Academic Department</label>
+                  <input id="wizOrganizer" placeholder="e.g. College of Science - Computer Science Department">
+                </div>
+                <div class="field span-2">
+                  <label style="font-weight:700;">Venue / Hall *</label>
+                  <input id="wizVenue" placeholder="e.g. BU Polangui Campus Auditorium" required>
+                </div>
+                <div class="field">
+                  <label style="font-weight:700;">Event Date *</label>
+                  <input id="wizDate" type="date" required>
+                </div>
+                <div class="field" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                  <div>
+                    <label style="font-weight:700;">Start Time *</label>
+                    <input id="wizStart" type="time" value="09:00" required>
+                  </div>
+                  <div>
+                    <label style="font-weight:700;">End Time *</label>
+                    <input id="wizEnd" type="time" value="17:00" required>
+                  </div>
+                </div>
+                <div class="field span-2">
+                  <label style="font-weight:700;">Event Description</label>
+                  <textarea id="wizDescription" rows="3" placeholder="Brief event description, objectives, and topics..."></textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 2: Participants -->
+            <div id="wizardStep2" class="wizard-step-content hidden">
+              <div style="background:#f8fafc; border:1px solid var(--surface-border); border-radius:12px; padding:16px; margin-bottom:16px;">
+                <label style="font-weight:700; margin-bottom:10px; display:block;">Target Audience / Enrollment Scope</label>
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:12px;">
+                  <label class="scope-card active" id="scopeAllCard">
+                    <input type="radio" name="wizScope" value="ALL" checked>
+                    <div>
+                      <strong>🌐 Open to All Students</strong>
+                      <div class="muted small" style="margin-top:2px;">Enroll all active students campus-wide</div>
+                    </div>
+                  </label>
+                  <label class="scope-card" id="scopeDeptCard">
+                    <input type="radio" name="wizScope" value="DEPT">
+                    <div>
+                      <strong>🏛️ By Department / Program</strong>
+                      <div class="muted small" style="margin-top:2px;">Enroll students by academic department</div>
+                    </div>
+                  </label>
+                  <label class="scope-card" id="scopeCustomCard">
+                    <input type="radio" name="wizScope" value="CUSTOM">
+                    <div>
+                      <strong>👤 Custom Selection</strong>
+                      <div class="muted small" style="margin-top:2px;">Manually pick specific participants</div>
+                    </div>
+                  </label>
+                </div>
+
+                <!-- Department Selector (visible when DEPT selected) -->
+                <div id="deptSelectWrap" class="hidden" style="margin-top:14px; padding-top:12px; border-top:1px solid #e2e8f0; display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                  <label style="font-weight:700;">Select Academic Department:</label>
+                  <select id="wizDeptSelect" style="max-width:320px; font-weight:600;"></select>
+                </div>
+              </div>
+
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+                <div>
+                  <h3 style="margin:0 0 2px; font-size:0.95rem;">Enrolled Participants</h3>
+                  <span class="muted small" id="wizRosterCount">0 of 0 selected</span>
+                </div>
+                <div style="display:flex; gap:8px;">
+                  <button id="wizSelectAllBtn" type="button" class="btn secondary small-btn">✓ Select All</button>
+                  <button id="wizClearAllBtn" type="button" class="btn secondary small-btn">Clear</button>
+                </div>
+              </div>
+
+              <div style="margin-bottom:12px;">
+                <input id="wizStudentSearch" placeholder="🔍 Search students by student number or name..." style="width:100%; box-sizing:border-box;">
+              </div>
+
+              <div id="wizRosterContainer" class="wizard-roster-box" style="max-height:260px;">
+                <!-- Student rows dynamically populated via JS -->
+              </div>
+            </div>
+
+            <!-- Step 3: Attendance -->
+            <div id="wizardStep3" class="wizard-step-content hidden">
+              <label style="font-weight:700; margin-bottom:10px; display:block;">Attendance Tracking Mode *</label>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px;">
+                <label class="scope-card active" id="attModePresentOnlyCard">
+                  <input type="radio" name="wizAttendanceType" value="PRESENT_ONLY" checked>
+                  <div>
+                    <strong style="color:#16a34a; font-size:0.98rem;">🟢 Present Only (Single Check-In)</strong>
+                    <div class="muted small" style="margin-top:4px;">Students scan once upon arrival to be recorded as Present. Recommended for standard seminars and events.</div>
+                  </div>
+                </label>
+                <label class="scope-card" id="attModePresentLogoutCard">
+                  <input type="radio" name="wizAttendanceType" value="PRESENT_AND_LOGOUT">
+                  <div>
+                    <strong style="color:#2563eb; font-size:0.98rem;">🔄 Present and Logout (Two-Stage)</strong>
+                    <div class="muted small" style="margin-top:4px;">Students check in upon arrival and logout upon departure. Tracks complete stay duration and attendance completion.</div>
+                  </div>
+                </label>
+              </div>
+
+              <div class="field" style="margin-bottom:18px;">
+                <label style="font-weight:700; margin-bottom:6px; display:block;">Default Scanner Station Name</label>
+                <input id="wizScannerName" value="Main Entrance Scanner 1" placeholder="e.g. Main Hall Gate Scanner">
+                <span class="muted small" style="display:block; margin-top:4px;">A mobile pairing token will be generated automatically for staff to pair mobile phones.</span>
+              </div>
+
+              <div style="display:flex; flex-direction:column; gap:10px; background:#f8fafc; padding:14px; border-radius:10px; border:1px solid var(--surface-border); font-size:0.88rem;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="color:#16a34a; font-weight:bold;">✓</span>
+                  <span>Instant camera QR code badge scanning with offline queuing</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="color:#16a34a; font-weight:bold;">✓</span>
+                  <span>Idempotent duplicate check-in prevention with cryptographic signatures</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="color:#16a34a; font-weight:bold;">✓</span>
+                  <span>Live Server-Sent Events (SSE) stream to Manager Dashboard and live monitors</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 4: Review -->
+            <div id="wizardStep4" class="wizard-step-content hidden">
+              <h3 style="margin:0 0 6px; font-size:1rem;">Review &amp; Finalize Event</h3>
+              <p class="muted small" style="margin-bottom:16px;">Please review the institutional event configuration before creation.</p>
+
+              <div class="wizard-review-card" style="margin-bottom:16px;">
+                <div>
+                  <span class="muted small" style="display:block; text-transform:uppercase;">Event Details</span>
+                  <div id="revName" style="font-weight:750; font-size:1.05rem; margin-top:2px;">—</div>
+                  <div id="revOrganizer" class="muted small" style="margin-top:2px;">—</div>
+                  <div id="revVenue" class="muted small" style="margin-top:2px;">—</div>
+                </div>
+                <div>
+                  <span class="muted small" style="display:block; text-transform:uppercase;">Schedule</span>
+                  <div id="revDate" style="font-weight:750; margin-top:2px;">—</div>
+                  <div id="revTime" class="muted small" style="margin-top:2px;">—</div>
+                </div>
+                <div>
+                  <span class="muted small" style="display:block; text-transform:uppercase;">Attendance Mode</span>
+                  <div id="revAttType" style="font-weight:750; margin-top:2px;">Present Only</div>
+                  <div class="muted small" id="revAttTypeDesc">Single check-in</div>
+                </div>
+                <div>
+                  <span class="muted small" style="display:block; text-transform:uppercase;">Enrolled Roster</span>
+                  <div id="revAttendees" style="font-weight:750; color:#1d4ed8; margin-top:2px;">0 Participants</div>
+                  <div class="muted small" id="revScopeDesc">QR passes generated immediately</div>
+                </div>
+                <div style="grid-column: span 2;">
+                  <span class="muted small" style="display:block; text-transform:uppercase;">Scanner Station</span>
+                  <div id="revScanner" style="font-weight:750; margin-top:2px;">Main Entrance Scanner 1</div>
+                  <div class="muted small">Mobile pairing code will be provisioned upon publishing</div>
+                </div>
+              </div>
+
+              <!-- Certificate Sync Info -->
+              <div style="display:flex; align-items:flex-start; gap:10px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:12px 14px; font-size:0.88rem; color:#1e40af;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0; margin-top:2px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                <div>
+                  <strong>Certificate Management:</strong>
+                  <span> Certificates are managed by the System Admin. Eligible attendees who complete attendance will be synchronized automatically for administrative review and bulk PDF certificate issuance.</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Wizard Footer Controls -->
+          <div class="wizard-footer">
+            <button id="wizResetBtn" type="button" class="btn secondary">Reset Form</button>
+            <div style="display:flex; gap:10px;">
+              <button id="wizBackBtn" type="button" class="btn secondary hidden">← Back</button>
+              <button id="wizNextBtn" type="button" class="btn" style="background:#1d4ed8;">Next: Participants →</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>Scheduled Events</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Event</th>
+                  <th>Date</th>
+                  <th>Venue</th>
+                  <th>Registered</th>
+                  <th>Present</th>
+                </tr>
+              </thead>
+              <tbody id="eventsBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Students -->
+      <section id="students" class="section">
+        <div class="page-head">
+          <div>
+            <h1>Students &amp; Registrations</h1>
+            <div class="muted">Enroll students and generate personalized Event QR passes.</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>Add Student</h2>
+          <form id="studentForm" class="form-grid">
+            <div class="field">
+              <label>Student ID</label>
+              <input name="studentNumber" placeholder="e.g. 2026-0001" required>
+            </div>
+            <div class="field">
+              <label>Full Name</label>
+              <input name="fullName" placeholder="e.g. Juan Dela Cruz" required>
+            </div>
+            <div class="field">
+              <label>Academic Program</label>
+              <input name="program" placeholder="e.g. BS Information Technology" required>
+            </div>
+            <div style="display:flex; align-items:flex-end;">
+              <button class="btn" type="submit" style="width:100%;">Add Student</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="panel">
+          <h2>Event Registration &amp; QR Passes</h2>
+          <div class="toolbar">
+            <select id="registrationEvent" aria-label="Select Event"></select>
+            <select id="registrationStudent" aria-label="Select Student"></select>
+            <button class="btn" id="registerBtn">Register Student</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Student ID</th>
+                  <th>Name</th>
+                  <th>Program</th>
+                  <th>Status</th>
+                  <th>QR Pass</th>
+                </tr>
+              </thead>
+              <tbody id="registrationsBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>Student Directory</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Student ID</th>
+                  <th>Name</th>
+                  <th>Program</th>
+                </tr>
+              </thead>
+              <tbody id="studentsBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Attendance -->
+      <section id="attendance" class="section">
+        <div class="page-head">
+          <div>
+            <h1>Live Attendance Monitor</h1>
+            <div class="muted">Real-time check-in feed streamed from authorized scanner devices.</div>
+          </div>
+          <div id="presentCount" class="status no">Present: 0 / 0</div>
+        </div>
+
+        <div class="panel">
+          <div class="toolbar">
+            <select id="attendanceEvent" aria-label="Select Attendance Event"></select>
+            <span class="small muted">&bull; Updates automatically via Server-Sent Events stream.</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Student ID</th>
+                  <th>Name</th>
+                  <th>Program</th>
+                  <th>Status</th>
+                  <th>Time-In</th>
+                  <th>Logout</th>
+                  <th>Scanner Device</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="attendanceBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section: Scanners -->
+      <section id="scanners" class="section">
+        <div class="page-head">
+          <div>
+            <h1>Scanner Devices</h1>
+            <div class="muted">Pair and authorize staff mobile phones for offline/online scanning.</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>Enroll New Scanner</h2>
+          <div class="toolbar">
+            <select id="scannerEvent" aria-label="Select Event for Scanner"></select>
+            <input id="scannerName" placeholder="Scanner name, e.g. Entrance A Gate" style="max-width:320px;">
+            <button id="createScanner" class="btn">Create Scanner</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Status</th>
+                  <th>Created</th>
+                  <th>Pairing</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="scannersBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- QR Pass Modal -->
+  <div id="qrModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="qrTitle">
+    <div class="modal-card">
+      <button id="closeQr" class="btn secondary small-btn" style="float:right;">Close</button>
+      <h2 id="qrTitle">Event QR Pass</h2>
+      <div id="qrDetails" style="margin:12px 0; line-height:1.6;"></div>
+      <img id="qrImage" class="qr-img" alt="QR code pass">
+      <div id="qrToken" class="mono small" style="text-align:center; margin:12px 0; color:var(--ink-muted);"></div>
+      <div class="toolbar" style="justify-content:center; margin-top:16px;">
+        <button id="printPass" class="btn">Print Official Pass</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scanner Pairing Modal -->
+  <div id="pairModal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-card" style="max-width: 480px;">
+      <button id="closePair" class="btn secondary small-btn" style="float:right;">Close</button>
+      <h2 style="margin-top:0;">Pair Scanner Phone</h2>
+      <p class="muted small">Scan this QR code on your phone or copy the pairing code below to link the device to this event.</p>
+      
+      <div style="text-align:center; margin: 16px 0 10px;">
+        <img id="pairQr" class="qr-img" alt="Pairing QR code" style="max-width:210px; border-radius:8px; border:1px solid #cbd5e1;">
+      </div>
+
+      <!-- Dedicated Clean Pairing Code Box (Pure Code without http://) -->
+      <div style="background:#f8fafc; border:1.5px solid #93c5fd; border-radius:10px; padding:12px 14px; margin: 12px 0;">
+        <label style="display:block; font-size:0.75rem; font-weight:750; color:#1e40af; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Pairing Code (Pure Token — No http://)</label>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <input id="pairTokenOnly" readonly class="mono" style="flex:1; font-size:1.15rem; font-weight:750; text-align:center; background:#ffffff; color:#1d4ed8; letter-spacing:1px; padding:8px 10px; border:1px solid #bfdbfe; border-radius:6px;" placeholder="EP-PAIR-...">
+          <button id="copyPairTokenBtn" class="btn primary" type="button" style="white-space:nowrap; padding:8px 14px; font-weight:700;">Copy Code</button>
+        </div>
+      </div>
+
+      <!-- Full Web Links -->
+      <div style="background:#f1f5f9; border-radius:8px; padding:10px 12px; margin-top:10px; border:1px solid #e2e8f0;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+          <span style="font-size:0.75rem; font-weight:700; color:#475569; text-transform:uppercase;">Direct Web Link</span>
+          <button id="copyPairUrlBtn" class="btn secondary small-btn" type="button">Copy Link</button>
+        </div>
+        <div id="pairUrl" class="mono small" style="word-break:break-all; font-size:0.78rem; color:#334155;"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/manager.js"></script>
+</body>
+</html>

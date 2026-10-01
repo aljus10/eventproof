@@ -1,0 +1,60 @@
+# Build outputs
+target/
+*.class
+
+# Local runtime data & database (keep directory structure with .gitkeep)
+data/*
+!data/.gitkeep
+*.db
+*.mv.db
+*.lock.db
+*.trace.db
+
+# Cryptographic Keys, Private Keys, Certificates & Keystores (Security Critical)
+*.key
+*.pem
+*.pkcs8
+*.jks
+*.keystore
+id_rsa*
+id_ed25519*
+
+# Sensitive exports, student rosters & personal data (Data Privacy)
+*.csv
+*.tsv
+*.xlsx
+*.xls
+*roster*
+*students_real*
+*classmates*
+private/
+data/private/
+
+# Generated Artifacts & QR Codes
+*.pdf
+*.zip
+qr-codes/
+exports/
+badges/
+certificates_out/
+
+# Environment files and credentials
+.env
+.env.*
+!.env.example
+*.secret
+credentials.json
+
+# IDE and Editor files
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# OS temporary files
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.bak

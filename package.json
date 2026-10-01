@@ -1,0 +1,10 @@
+{
+  "name": "eventproof-clean",
+  "version": "1.0.0",
+  "description": "EventProof Clean - Spring Boot capstone prototype",
+  "scripts": {
+    "build": "mvn package",
+    "test": "mvn test",
+    "start": "mvn spring-boot:run"
+  }
+}

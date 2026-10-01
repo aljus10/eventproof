@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EventProof — System Use Case Diagram Viewer</title>
+  <style>
+    :root {
+      --bg-primary: #0F172A;
+      --bg-surface: #1E293B;
+      --bg-panel: #334155;
+      --text-main: #F8FAFC;
+      --text-muted: #94A3B8;
+      --border-color: #475569;
+      --accent-student: #10B981;
+      --accent-manager: #3B82F6;
+      --accent-scanner: #F59E0B;
+      --accent-admin: #EF4444;
+      --accent-verifier: #8B5CF6;
+      --accent-teal: #14B8A6;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Top Control Bar */
+    header {
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-color);
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 20;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      color: #FFFFFF;
+    }
+
+    .badge {
+      background: #0284C7;
+      color: #FFFFFF;
+      font-size: 0.72rem;
+      padding: 3px 8px;
+      border-radius: 9999px;
+      font-weight: 600;
+    }
+
+    .view-tabs {
+      display: flex;
+      background: var(--bg-primary);
+      border-radius: 8px;
+      padding: 3px;
+      border: 1px solid var(--border-color);
+    }
+
+    .view-tab {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 6px 14px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .view-tab.active {
+      background: #2563EB;
+      color: #FFFFFF;
+    }
+
+    .action-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn {
+      background: var(--bg-panel);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 7px 14px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      text-decoration: none;
+    }
+
+    .btn:hover {
+      background: #475569;
+      border-color: #64748B;
+    }
+
+    .btn-primary {
+      background: #0D9488;
+      border-color: #0F766E;
+      color: #FFFFFF;
+    }
+
+    .btn-primary:hover {
+      background: #0F766E;
+    }
+
+    /* Main Content Area */
+    .workspace {
+      display: flex;
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #viewport {
+      flex: 1;
+      height: 100%;
+      cursor: grab;
+      position: relative;
+      background: #0B0F19;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #viewport.grabbing {
+      cursor: grabbing;
+    }
+
+    #viewerCanvas {
+      transform-origin: center center;
+      transition: transform 0.05s ease-out;
+      will-change: transform;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #FFFFFF;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+      padding: 10px;
+    }
+
+    #imgActual {
+      max-width: 1400px;
+      height: auto;
+      display: block;
+      border-radius: 8px;
+    }
+
+    #svgWrapper {
+      display: none;
+      width: 1400px;
+      height: 950px;
+    }
+
+    /* Floating Zoom Controls */
+    .floating-controls {
+      position: absolute;
+      bottom: 24px;
+      right: 24px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+      z-index: 10;
+    }
+
+    .icon-btn {
+      background: var(--bg-panel);
+      border: none;
+      color: #FFFFFF;
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: bold;
+      transition: all 0.15s ease;
+    }
+
+    .icon-btn:hover {
+      background: #475569;
+    }
+
+    .zoom-level {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      min-width: 48px;
+      text-align: center;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="brand">
+      <span style="font-size: 1.4rem;">🏛️</span>
+      <div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="brand-title">EventProof Platform</span>
+          <span class="badge">Use Case Architecture</span>
+        </div>
+        <div style="font-size: 0.72rem; color: var(--text-muted);">Offline-First Attendance &amp; Verifiable E-Certificate System</div>
+      </div>
+    </div>
+
+    <!-- Toggle View Mode -->
+    <div class="view-tabs">
+      <button id="tabImg" class="view-tab active" onclick="switchView('img')">🖼️ Actual Diagram (Image)</button>
+      <button id="tabSvg" class="view-tab" onclick="switchView('svg')">📐 Vector Diagram (SVG)</button>
+    </div>
+
+    <!-- Actions -->
+    <div class="action-group">
+      <a class="btn" href="eventproof_use_case_diagram.png" download="EventProof_Use_Case_Diagram.png">⬇️ Download PNG</a>
+      <a class="btn" href="EventProof_Use_Case_Diagram.svg" download="EventProof_Use_Case_Diagram.svg">📐 Download SVG</a>
+      <a class="btn btn-primary" href="USE_CASE_SPECIFICATION.md" target="_blank">📖 View Specs</a>
+    </div>
+  </header>
+
+  <!-- Workspace -->
+  <div class="workspace">
+    <!-- Viewport -->
+    <div id="viewport">
+      <div id="viewerCanvas">
+        <img id="imgActual" src="eventproof_use_case_diagram.png" alt="EventProof Actual Use Case Diagram">
+        <div id="svgWrapper">
+          <object id="svgObject" data="EventProof_Use_Case_Diagram.svg" type="image/svg+xml" style="width:100%; height:100%; pointer-events:none;"></object>
+        </div>
+      </div>
+    </div>
+
+    <!-- Floating Zoom Controls -->
+    <div class="floating-controls">
+      <button class="icon-btn" onclick="zoomIn()" title="Zoom In">+</button>
+      <button class="icon-btn" onclick="zoomOut()" title="Zoom Out">-</button>
+      <span class="zoom-level" id="zoomLevel">100%</span>
+      <button class="icon-btn" onclick="resetZoom()" title="Reset Zoom" style="font-size:0.75rem;">1:1</button>
+      <button class="icon-btn" onclick="fitToWindow()" title="Fit to Screen" style="font-size:0.75rem;">FIT</button>
+    </div>
+  </div>
+
+  <script>
+    let scale = 0.8;
+    let translateX = 0;
+    let translateY = 0;
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+
+    const viewport = document.getElementById('viewport');
+    const canvas = document.getElementById('viewerCanvas');
+    const zoomDisplay = document.getElementById('zoomLevel');
+    const imgEl = document.getElementById('imgActual');
+    const svgEl = document.getElementById('svgWrapper');
+
+    function updateTransform() {
+      canvas.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+      zoomDisplay.textContent = `${Math.round(scale * 100)}%`;
+    }
+
+    function zoomIn() {
+      scale = Math.min(scale * 1.15, 3.5);
+      updateTransform();
+    }
+
+    function zoomOut() {
+      scale = Math.max(scale / 1.15, 0.2);
+      updateTransform();
+    }
+
+    function resetZoom() {
+      scale = 1.0;
+      translateX = 0;
+      translateY = 0;
+      updateTransform();
+    }
+
+    function fitToWindow() {
+      const vw = viewport.clientWidth - 60;
+      const vh = viewport.clientHeight - 60;
+      scale = Math.min(vw / 1400, vh / 950, 1.0);
+      translateX = 0;
+      translateY = 0;
+      updateTransform();
+    }
+
+    // Drag / Pan Handlers
+    viewport.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      startX = e.clientX - translateX;
+      startY = e.clientY - translateY;
+      viewport.classList.add('grabbing');
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      translateX = e.clientX - startX;
+      translateY = e.clientY - startY;
+      updateTransform();
+    });
+
+    window.addEventListener('mouseup', () => {
+      isDragging = false;
+      viewport.classList.remove('grabbing');
+    });
+
+    // Mouse Wheel Zoom
+    viewport.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
+      scale = Math.min(Math.max(scale * zoomFactor, 0.2), 3.5);
+      updateTransform();
+    }, { passive: false });
+
+    // Switch between Image and SVG
+    function switchView(mode) {
+      if (mode === 'img') {
+        imgEl.style.display = 'block';
+        svgEl.style.display = 'none';
+        document.getElementById('tabImg').classList.add('active');
+        document.getElementById('tabSvg').classList.remove('active');
+      } else {
+        imgEl.style.display = 'none';
+        svgEl.style.display = 'block';
+        document.getElementById('tabImg').classList.remove('active');
+        document.getElementById('tabSvg').classList.add('active');
+      }
+    }
+
+    window.addEventListener('load', () => {
+      fitToWindow();
+    });
+  </script>
+</body>
+</html>

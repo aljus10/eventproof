@@ -1,0 +1,109 @@
+```mermaid
+flowchart LR
+    %% ========================================================
+    %% ACTORS
+    %% ========================================================
+    classDef actorStyle fill:#1e293b,stroke:#0f172a,stroke-width:2px,color:#ffffff,font-weight:bold,rx:5;
+    classDef ucStyle fill:#f8fafc,stroke:#334155,stroke-width:1.5px,color:#0f172a,rx:20;
+    classDef coreStyle fill:#eff6ff,stroke:#2563eb,stroke-width:1.8px,color:#1e3a8a,rx:20;
+    classDef noteStyle fill:#fef3c7,stroke:#d97706,stroke-width:1px,color:#78350f,stroke-dasharray: 3 3;
+
+    Student["👤 Student / Participant"]:::actorStyle
+    Verifier["👤 Public Verifier"]:::actorStyle
+
+    Manager["👤 Event Manager"]:::actorStyle
+    Scanner["👤 Scanner Staff"]:::actorStyle
+    Admin["👤 System Admin"]:::actorStyle
+
+    subgraph SystemBoundary ["EventProof Use Case Diagram<br><b>Offline-First Attendance and Verifiable E-Certificate Management System</b>"]
+
+        %% Student / Attendance flow
+        UC_PresentQR(["Present Event QR"]):::ucStyle
+        UC_CheckIn(["Check In to Event"]):::coreStyle
+        UC_ManualLookup(["Request Manual Lookup"]):::ucStyle
+
+        UC_Identify(["Identify Participant"]):::coreStyle
+        UC_ConfirmAtt(["Confirm Attendance"]):::coreStyle
+        UC_RecordAtt(["Record Attendance"]):::coreStyle
+
+        %% Event Manager
+        UC_ManageEvents(["Manage Events"]):::ucStyle
+        UC_ManageStudents(["Manage Students"]):::ucStyle
+        UC_RegisterStudents(["Register Students to Event"]):::ucStyle
+        UC_GenPasses(["Generate Event QR Passes"]):::ucStyle
+        UC_SetupScanner(["Set Up Scanner"]):::ucStyle
+
+        %% Scanner Staff
+        UC_ScanQR(["Scan Student QR"]):::ucStyle
+        UC_FindManual(["Find Student Manually"]):::ucStyle
+        UC_SyncOffline(["Sync Offline Attendance"]):::ucStyle
+        UC_MonitorLive(["Monitor Live Attendance"]):::ucStyle
+        NoteSync["Note: When connection returns"]:::noteStyle
+
+        %% System Admin / Certificates
+        UC_ViewEligible(["View Certificate Eligibility"]):::ucStyle
+        UC_ConfigCert(["Configure Certificate"]):::ucStyle
+        UC_ManageTemplates(["Manage Certificate Templates"]):::ucStyle
+        UC_CheckEligible(["Check Certificate Eligibility"]):::coreStyle
+        NoteEligible["Note: Eligible only if registered and marked PRESENT."]:::noteStyle
+
+        UC_GenPDF(["Generate Certificate PDF"]):::ucStyle
+        UC_IssueCert(["Issue Certificate"]):::coreStyle
+        UC_BulkIssue(["Bulk Issue Certificates"]):::ucStyle
+        UC_RevokeRestore(["Revoke / Restore Certificate"]):::ucStyle
+
+        %% Public Verification
+        UC_VerifyCert(["Verify Certificate"]):::ucStyle
+        UC_CheckCertStatus(["Check Certificate Status"]):::coreStyle
+        NoteCertStatus["Note: VALID / REVOKED / UNKNOWN / INVALID"]:::noteStyle
+    end
+
+    %% Student Relationships
+    Student --- UC_PresentQR
+    Student --- UC_CheckIn
+    Student --- UC_ManualLookup
+
+    UC_PresentQR -. "<<extend>><br>[when student has QR]" .-> UC_CheckIn
+    UC_ManualLookup -. "<<extend>><br>[when QR is unavailable]" .-> UC_CheckIn
+
+    UC_CheckIn -. "<<include>>" .-> UC_Identify
+    UC_CheckIn -. "<<include>>" .-> UC_ConfirmAtt
+    UC_ConfirmAtt -. "<<include>>" .-> UC_RecordAtt
+
+    %% Event Manager Relationships
+    Manager --- UC_ManageEvents
+    Manager --- UC_ManageStudents
+    Manager --- UC_RegisterStudents
+    Manager --- UC_GenPasses
+    Manager --- UC_SetupScanner
+
+    %% Scanner Staff Relationships
+    Scanner --- UC_ScanQR
+    Scanner --- UC_FindManual
+    Scanner --- UC_SyncOffline
+    Scanner --- UC_MonitorLive
+
+    UC_ScanQR -. "<<include>>" .-> UC_Identify
+    UC_FindManual -. "<<include>>" .-> UC_Identify
+    UC_SyncOffline --- NoteSync
+
+    %% System Admin Relationships
+    Admin --- UC_ViewEligible
+    Admin --- UC_ConfigCert
+    Admin --- UC_ManageTemplates
+    Admin --- UC_IssueCert
+    Admin --- UC_BulkIssue
+    Admin --- UC_RevokeRestore
+
+    %% Certificate Relationships
+    UC_IssueCert -. "<<include>>" .-> UC_CheckEligible
+    UC_IssueCert -. "<<include>>" .-> UC_GenPDF
+    UC_BulkIssue -. "<<include>>" .-> UC_IssueCert
+    UC_BulkIssue -. "<<include>>" .-> UC_CheckEligible
+    UC_CheckEligible --- NoteEligible
+
+    %% Public Verifier Relationships
+    Verifier --- UC_VerifyCert
+    UC_VerifyCert -. "<<include>>" .-> UC_CheckCertStatus
+    UC_CheckCertStatus --- NoteCertStatus
+```
