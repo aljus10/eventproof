@@ -48,9 +48,8 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/index.html", "/verify.html", "/css/**", "/js/**", "/api/verify/**", "/error").permitAll()
+                .requestMatchers("/", "/index.html", "/verify.html", "/scanner.html", "/css/**", "/js/**", "/api/verify/**", "/api/scanner/**", "/error").permitAll()
                 .requestMatchers("/manager.html", "/api/manager/**").hasRole("EVENT_MANAGER")
-                .requestMatchers("/scanner.html", "/api/scanner/**").hasRole("SCANNER")
                 .requestMatchers("/admin.html", "/api/admin/**").hasRole("SYSTEM_ADMIN")
                 .anyRequest().authenticated())
             .formLogin(form -> form

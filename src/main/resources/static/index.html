@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>EventProof - Sign In</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 3L5 7.5V14.5C5 21.6 9.7 28.1 16 29.5C22.3 28.1 27 21.6 27 14.5V7.5L16 3Z' fill='%231d4ed8' stroke='%233b82f6' stroke-width='1.5'/%3E%3Cpath d='M11 15.5L14.5 19L21.5 11.5' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="/css/login.css">
 </head>
 <body class="login-body">
@@ -128,7 +129,17 @@
     <!-- Brand Header -->
     <header class="login-brand-header">
       <div class="ep-logo-badge" title="EventProof Logo">
-        <span>EP</span>
+        <svg width="34" height="34" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M16 3L5 7.5V14.5C5 21.6 9.7 28.1 16 29.5C22.3 28.1 27 21.6 27 14.5V7.5L16 3Z" fill="url(#loginShieldGrad)" stroke="rgba(255,255,255,0.35)" stroke-width="1.2" stroke-linejoin="round"/>
+          <path d="M16 5.8L7.5 9.3V14.5C7.5 20.1 11.1 25.2 16 26.5C20.9 25.2 24.5 20.1 24.5 14.5V9.3L16 5.8Z" fill="#1e40af" fill-opacity="0.35"/>
+          <path d="M11 15.5L14.5 19L21.5 11.5" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <defs>
+            <linearGradient id="loginShieldGrad" x1="5" y1="3" x2="27" y2="29.5" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#60a5fa"/>
+              <stop offset="1" stop-color="#1d4ed8"/>
+            </linearGradient>
+          </defs>
+        </svg>
       </div>
       <h1 class="brand-title">EventProof</h1>
       <p class="brand-description">Event Attendance &amp; Certificate Management</p>
@@ -192,7 +203,7 @@
           <span>or</span>
         </div>
 
-        <!-- Interactive Demo Account Selector -->
+        <!-- Interactive Demo Account Selector in Gray Layout -->
         <button type="button" class="btn-demo-dropdown" id="demoToggleBtn" aria-expanded="false" aria-controls="demoPanel">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -204,7 +215,7 @@
           <span class="chevron" aria-hidden="true">&#8250;</span>
         </button>
 
-        <!-- Demo Accounts Quick Fill Options -->
+        <!-- Demo Accounts Quick Fill Panel (Gray Layout) -->
         <div class="demo-accounts-panel" id="demoPanel">
           <div class="demo-item" role="button" tabindex="0" onclick="fillAccount('eventmanager', 'demo123')" onkeydown="if(event.key==='Enter'||event.key===' ') fillAccount('eventmanager', 'demo123')">
             <div>
@@ -233,14 +244,13 @@
       </form>
     </section>
 
-    <!-- Bottom Footer Tagline -->
+    <!-- Bottom Footer -->
     <footer class="login-footer">
       <div class="footer-system-text">
         <span>EventProof</span>
         <span>&bull;</span>
         <span>Local System</span>
       </div>
-      <div class="footer-dash"></div>
       <p class="footer-motto">Events today. Brighter tomorrows.</p>
     </footer>
   </main>

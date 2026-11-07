@@ -101,6 +101,11 @@ public class AdminController {
         return admin.uploadBackground(id, file.getBytes(), file.getContentType());
     }
 
+    @PostMapping("/templates/{id}/reset-default")
+    public AdminService.TemplateView resetDefaultTemplate(@PathVariable Long id) {
+        return admin.resetToDefault(id);
+    }
+
     @PostMapping(value = "/templates/sample-pdf", produces = MediaType.APPLICATION_PDF_VALUE)
     public ResponseEntity<byte[]> samplePdf(@RequestBody Map<String, String> body, HttpServletRequest request) {
         String base = extractBaseUrl(request);

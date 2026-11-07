@@ -38,8 +38,9 @@ public class ScannerService {
     public PairResult pair(String pairingToken) {
         ScannerDevice scanner = scanners.findByPairingToken(pairingToken)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pairing code not found"));
-        if (scanner.isPaired()) throw new ResponseStatusException(HttpStatus.CONFLICT, "This scanner has already been paired");
-        scanner.setDeviceId(UUID.randomUUID().toString());
+        if (scanner.getDeviceId() == null || scanner.getDeviceId().isBlank()) {
+            scanner.setDeviceId(UUID.randomUUID().toString());
+        }
         scanner.setPaired(true);
         scanner.setPairedAt(Instant.now());
         scanners.save(scanner);
@@ -54,13 +55,48 @@ public class ScannerService {
     @Transactional(readOnly = true)
     public ParticipantView resolve(String deviceId, String qrToken) {
         ScannerDevice scanner = requireDevice(deviceId);
-        String credential = signatures.extractRegistrationCredential(qrToken);
-        if (credential == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid QR credential");
-        EventRegistration registration = registrations.findByCredentialToken(credential)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Participant not found"));
-        if (!registration.getEvent().getId().equals(scanner.getEvent().getId())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "QR is for a different event");
+        if (qrToken == null || qrToken.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Scan or enter a QR token first");
         }
+        String token = qrToken.trim();
+
+        // 1. Detect if the user accidentally scanned a scanner pairing token or pairing URL
+        if (token.contains("pair=") || token.contains("/scanner.html") || scanners.findByPairingToken(token).isPresent()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Scanned code is a scanner pairing code, not a student attendance pass");
+        }
+
+        EventRegistration registration = null;
+
+        // 2. Try cryptographic registration token (EP1.<credential>.<signature>)
+        if (token.startsWith("EP1.")) {
+            String credential = signatures.extractRegistrationCredential(token);
+            if (credential != null) {
+                registration = registrations.findByCredentialToken(credential).orElse(null);
+            }
+        }
+
+        // 3. Try direct credential token match (e.g. EP-CRED-... or raw UUID)
+        if (registration == null) {
+            registration = registrations.findByCredentialToken(token).orElse(null);
+        }
+
+        // 4. Try student number match within the scanner's event (e.g. "2024-01-07404")
+        if (registration == null) {
+            String studentNum = token.toLowerCase(Locale.ROOT);
+            registration = registrations.findByEventIdOrderByStudentFullNameAsc(scanner.getEvent().getId()).stream()
+                    .filter(r -> r.getStudent().getStudentNumber().toLowerCase(Locale.ROOT).equals(studentNum))
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        if (registration == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid QR credential: not a recognized EventProof participant pass");
+        }
+
+        if (!registration.getEvent().getId().equals(scanner.getEvent().getId())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Participant is registered for a different event: '" + registration.getEvent().getName() + "'");
+        }
+
         Attendance row = attendance.findByEventIdAndRegistrationId(scanner.getEvent().getId(), registration.getId()).orElse(null);
         return participantView(registration, row);
     }

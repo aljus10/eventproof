@@ -126,6 +126,21 @@ public class ManagerService {
     }
 
     @Transactional
+    public StudentView updateStudent(Long id, String studentNumber, String fullName, String program) {
+        Student s = students.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found"));
+        if (studentNumber != null && !studentNumber.isBlank()) {
+            String trimmedNum = studentNumber.trim();
+            if (!trimmedNum.equalsIgnoreCase(s.getStudentNumber()) && students.findByStudentNumber(trimmedNum).isPresent()) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Student number already in use by another student");
+            }
+            s.setStudentNumber(trimmedNum);
+        }
+        if (fullName != null && !fullName.isBlank()) s.setFullName(fullName.trim());
+        if (program != null && !program.isBlank()) s.setProgram(program.trim());
+        return studentView(students.save(s));
+    }
+
+    @Transactional
     public RegistrationView registerStudent(Long eventId, Long studentId) {
         Event event = getEvent(eventId);
         Student student = students.findById(studentId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found"));
@@ -192,6 +207,10 @@ public class ManagerService {
         long registrationCount = registrations.count();
         long attendanceCount = attendance.count();
         return new DashboardView(eventCount, studentCount, registrationCount, attendanceCount);
+    }
+
+    public Event event(Long id) {
+        return getEvent(id);
     }
 
     private Event getEvent(Long id) {

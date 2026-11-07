@@ -58,6 +58,11 @@ public class ManagerController {
     @ResponseStatus(HttpStatus.CREATED)
     public ManagerService.StudentView addStudent(@RequestBody StudentRequest r) { return service.addStudent(r.studentNumber(), r.fullName(), r.program()); }
 
+    @PutMapping("/students/{studentId}")
+    public ManagerService.StudentView updateStudent(@PathVariable Long studentId, @RequestBody StudentRequest r) {
+        return service.updateStudent(studentId, r.studentNumber(), r.fullName(), r.program());
+    }
+
     @GetMapping("/events/{eventId}/registrations")
     public List<ManagerService.RegistrationView> registrations(@PathVariable Long eventId) { return service.eventRegistrations(eventId); }
 
@@ -68,6 +73,28 @@ public class ManagerController {
     public byte[] registrationQr(@PathVariable Long registrationId) {
         EventRegistration r = service.registration(registrationId);
         return qr.png(signatures.registrationQrToken(r.getCredentialToken()), 420);
+    }
+
+    @GetMapping(value = "/events/{eventId}/registrations/qr-zip", produces = "application/zip")
+    public ResponseEntity<byte[]> batchQrZip(@PathVariable Long eventId) throws java.io.IOException {
+        Event event = service.event(eventId);
+        List<ManagerService.RegistrationView> regs = service.eventRegistrations(eventId);
+        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+        try (java.util.zip.ZipOutputStream zos = new java.util.zip.ZipOutputStream(baos)) {
+            for (ManagerService.RegistrationView r : regs) {
+                String safeName = (r.studentNumber() + "_" + r.fullName())
+                        .replaceAll("[^a-zA-Z0-9_.-]", "_");
+                java.util.zip.ZipEntry entry = new java.util.zip.ZipEntry(safeName + ".png");
+                zos.putNextEntry(entry);
+                byte[] png = qr.png(r.qrToken(), 420);
+                zos.write(png);
+                zos.closeEntry();
+            }
+        }
+        String filename = "EventProof-" + event.getName().replaceAll("[^a-zA-Z0-9_.-]", "_") + "-QR-Passes.zip";
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                .body(baos.toByteArray());
     }
 
     @GetMapping("/events/{eventId}/attendance")
@@ -91,7 +118,8 @@ public class ManagerController {
     @GetMapping(value = "/scanners/{scannerId}/pairing-qr", produces = MediaType.IMAGE_PNG_VALUE)
     public byte[] pairingQr(@PathVariable Long scannerId, HttpServletRequest request) {
         ScannerDevice scanner = service.scanner(scannerId);
-        String base = request.getScheme() + "://" + request.getServerName() + ((request.getServerPort() == 80 || request.getServerPort() == 443) ? "" : ":" + request.getServerPort());
+        String host = resolveHost(request);
+        String base = request.getScheme() + "://" + host + ((request.getServerPort() == 80 || request.getServerPort() == 443) ? "" : ":" + request.getServerPort());
         String url = base + "/scanner.html?pair=" + scanner.getPairingToken();
         return qr.png(url, 420);
     }
@@ -99,13 +127,43 @@ public class ManagerController {
     @GetMapping("/scanners/{scannerId}/pairing")
     public Map<String, String> pairing(@PathVariable Long scannerId, HttpServletRequest request) {
         ScannerDevice scanner = service.scanner(scannerId);
-        String base = request.getScheme() + "://" + request.getServerName() + ((request.getServerPort() == 80 || request.getServerPort() == 443) ? "" : ":" + request.getServerPort());
-        String httpsBase = "https://" + request.getServerName() + ":8443";
+        String host = resolveHost(request);
+        String base = request.getScheme() + "://" + host + ((request.getServerPort() == 80 || request.getServerPort() == 443) ? "" : ":" + request.getServerPort());
+        String httpsBase = "https://" + host + ":8443";
         return Map.of(
             "pairingToken", scanner.getPairingToken(),
             "pairingUrl", base + "/scanner.html?pair=" + scanner.getPairingToken(),
             "pairingHttpsUrl", httpsBase + "/scanner.html?pair=" + scanner.getPairingToken()
         );
+    }
+
+    private String resolveHost(HttpServletRequest request) {
+        String host = request.getServerName();
+        if ("localhost".equalsIgnoreCase(host) || "127.0.0.1".equals(host) || "0:0:0:0:0:0:0:1".equals(host)) {
+            try {
+                String fallback = null;
+                java.util.Enumeration<java.net.NetworkInterface> interfaces = java.net.NetworkInterface.getNetworkInterfaces();
+                while (interfaces.hasMoreElements()) {
+                    java.net.NetworkInterface iface = interfaces.nextElement();
+                    if (iface.isLoopback() || !iface.isUp() || iface.isVirtual()) continue;
+                    String name = (iface.getName() + " " + iface.getDisplayName()).toLowerCase();
+                    boolean isVirtualAdapter = name.contains("virtual") || name.contains("vbox") || name.contains("vmnet") || name.contains("wsl") || name.contains("host-only");
+                    java.util.Enumeration<java.net.InetAddress> addresses = iface.getInetAddresses();
+                    while (addresses.hasMoreElements()) {
+                        java.net.InetAddress addr = addresses.nextElement();
+                        if (addr instanceof java.net.Inet4Address && !addr.isLoopbackAddress() && !addr.isLinkLocalAddress()) {
+                            String ip = addr.getHostAddress();
+                            if (!isVirtualAdapter) {
+                                return ip;
+                            }
+                            if (fallback == null) fallback = ip;
+                        }
+                    }
+                }
+                if (fallback != null) return fallback;
+            } catch (Exception ignored) {}
+        }
+        return host;
     }
 
     public record EventRequest(String name, String organizer, String description, String attendanceType,

@@ -27,16 +27,112 @@ document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{
   if(b.dataset.section==='settings')loadSettings();
 });
 
+window.navigateToSection = function(sec, targetEventId) {
+  const btn = document.querySelector(`.nav button[data-section="${sec}"]`);
+  if (btn) btn.click();
+  if (targetEventId) {
+    if (sec === 'certificates' && $('certEvent')) {
+      $('certEvent').value = targetEventId;
+      updateBulkLinks();
+      loadEligibility();
+    } else if (sec === 'templates' && $('templateEventSelect')) {
+      $('templateEventSelect').value = targetEventId;
+      const match = templatesList.find(t => String(t.eventId) === String(targetEventId));
+      if (match) selectTemplate(match.id);
+    }
+  }
+};
+
 // Dashboard & Events
 async function loadEvents(){
-  events=await api('/api/admin/events');
-  $('certEvent').innerHTML=events.map(e=>`<option value="${e.id}">${esc(e.name)}</option>`).join('');
-  const reg=events.reduce((a,e)=>a+e.registered,0),present=events.reduce((a,e)=>a+e.present,0);
-  $('adminMetrics').innerHTML=`
-    <div class="metric"><strong>${events.length}</strong><span>Active Events</span></div>
-    <div class="metric"><strong>${reg}</strong><span>Total Registrations</span></div>
-    <div class="metric"><strong>${present}</strong><span>Present / Eligible Attendees</span></div>
+  events = await api('/api/admin/events');
+  $('certEvent').innerHTML = events.map(e => `<option value="${e.id}">${esc(e.name)}</option>`).join('');
+
+  const reg = events.reduce((a, e) => a + (e.registered || 0), 0);
+  const present = events.reduce((a, e) => a + (e.present || 0), 0);
+  const issued = events.reduce((a, e) => a + (e.certificatesIssued || 0), 0);
+  const attRate = reg > 0 ? Math.round((present / reg) * 100) : 0;
+  const certRate = present > 0 ? Math.round((issued / present) * 100) : 0;
+
+  $('adminMetrics').innerHTML = `
+    <div class="metric">
+      <strong>${events.length}</strong>
+      <span>Active Events</span>
+      <span class="kpi-sub">Campus Plenaries &amp; Colloquiums</span>
+    </div>
+    <div class="metric">
+      <strong>${reg}</strong>
+      <span>Total Registrations</span>
+      <span class="kpi-sub">Enrolled student attendees</span>
+    </div>
+    <div class="metric">
+      <strong>${present} <small style="font-size:0.95rem; font-weight:600; color:#10b981;">(${attRate}%)</small></strong>
+      <span>Verified Attendance</span>
+      <span class="kpi-sub">Marked Present at Station</span>
+    </div>
+    <div class="metric">
+      <strong>${issued} <small style="font-size:0.95rem; font-weight:600; color:#2563eb;">(${certRate}%)</small></strong>
+      <span>Certificates Issued</span>
+      <span class="kpi-sub">Ed25519 Cryptographically Signed</span>
+    </div>
   `;
+
+  // Populate Dashboard Events Breakdown Table
+  const tbody = $('dashEventsBody');
+  if (tbody) {
+    if (!events.length) {
+      tbody.innerHTML = '<tr><td colspan="6" class="muted small" style="text-align:center; padding:20px;">No events scheduled in the system yet.</td></tr>';
+    } else {
+      tbody.innerHTML = events.map(e => {
+        const eReg = e.registered || 0;
+        const ePres = e.present || 0;
+        const eIss = e.certificatesIssued || 0;
+        const rate = eReg > 0 ? Math.round((ePres / eReg) * 100) : 0;
+        const issRate = ePres > 0 ? Math.round((eIss / ePres) * 100) : 0;
+        const isFullAtt = rate >= 100;
+
+        return `
+          <tr>
+            <td>
+              <div style="font-weight:700; color:#0f172a; font-size:0.92rem;">${esc(e.name)}</div>
+              <div class="muted small" style="font-size:0.75rem; display:flex; align-items:center; gap:4px; margin-top:2px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#64748b;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                <span>${esc(e.venue || 'Campus Venue')}</span>
+              </div>
+            </td>
+            <td style="white-space:nowrap; font-size:0.85rem; color:#475569;">
+              ${esc(e.eventDate || '-')}
+            </td>
+            <td>
+              <span class="mono" style="font-weight:700; font-size:0.88rem;">${eReg}</span>
+              <span class="muted small"> students</span>
+            </td>
+            <td>
+              <div class="dash-progress-wrap">
+                <div style="display:flex; justify-content:space-between; font-size:0.75rem; font-weight:650;">
+                  <span>${ePres} / ${eReg}</span>
+                  <span style="color:${rate > 0 ? '#1d4ed8' : '#94a3b8'};">${rate}%</span>
+                </div>
+                <div class="dash-progress-track">
+                  <div class="dash-progress-fill ${isFullAtt ? 'full' : ''}" style="width:${rate}%;"></div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="status ${eIss > 0 ? 'ok' : 'warn'}" style="font-size:0.72rem; padding:2px 8px;">
+                ${eIss} / ${ePres} (${issRate}%)
+              </span>
+            </td>
+            <td style="text-align:right; white-space:nowrap;">
+              <button class="btn secondary small-btn" style="padding:4px 9px; font-size:0.75rem; margin-right:4px;" onclick="navigateToSection('certificates', ${e.id})" title="Issue certificates for this event">Certificates</button>
+              <button class="btn secondary small-btn" style="padding:4px 9px; font-size:0.75rem;" onclick="navigateToSection('templates', ${e.id})" title="Design template for this event">Design</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+  }
+
   if(events.length){
     updateBulkLinks();
     loadEligibility();
@@ -305,7 +401,7 @@ function renderCanvas(){
     
     let contentHtml='';
     if(isCrest){
-      contentHtml='<div class="canvas-crest-icon">EP</div>';
+      contentHtml='<div class="canvas-crest-icon" title="Emblem Crest"><svg width="20" height="20" viewBox="0 0 32 32" fill="none"><path d="M16 3L5 7.5V14.5C5 21.6 9.7 28.1 16 29.5C22.3 28.1 27 21.6 27 14.5V7.5L16 3Z" fill="#1e3a8a" stroke="#caa04b" stroke-width="1.5"/><path d="M11 15.5L14.5 19L21.5 11.5" stroke="#caa04b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>';
     }else if(isQr){
       contentHtml='<div class="canvas-qr-box">QR CODE</div>';
     }else{
@@ -362,68 +458,145 @@ function getSamplePreviewText(key){
   }
 }
 
-function attachDrag(element, idx){
-  let isDragging=false, startX=0, startY=0, initialElX=0, initialElY=0;
-  
-  const onStart=(clientX,clientY)=>{
-    isDragging=true;
-    startX=clientX;
-    startY=clientY;
-    initialElX=currentTemplate.layout.elements[idx].x;
-    initialElY=currentTemplate.layout.elements[idx].y;
-    selectElement(idx);
+let activeDragState = null;
+
+function initCanvasDragEngine() {
+  const canvas = $('certCanvas');
+  const snapGuide = $('canvasSnapGuide');
+  const coordBadge = $('canvasCoordBadge');
+
+  const handlePointerMove = (clientX, clientY) => {
+    if (!activeDragState || !currentTemplate) return;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = 842 / rect.width;
+    const scaleY = 595 / rect.height;
+
+    const deltaX = (clientX - activeDragState.startX) * scaleX;
+    const deltaY = (clientY - activeDragState.startY) * scaleY;
+
+    let newX = Math.round(activeDragState.initialX + deltaX);
+    let newY = Math.round(activeDragState.initialY + deltaY);
+
+    // Bounds check within canvas
+    newX = Math.max(30, Math.min(812, newX));
+    newY = Math.max(25, Math.min(570, newY));
+
+    // Magnetic Center Snap to X = 421 (±6px)
+    const isCenterSnap = Math.abs(newX - 421) <= 6;
+    if (isCenterSnap) {
+      newX = 421;
+      if (snapGuide) snapGuide.classList.remove('hidden');
+    } else {
+      if (snapGuide) snapGuide.classList.add('hidden');
+    }
+
+    const el = currentTemplate.layout.elements[activeDragState.idx];
+    if (el) {
+      el.x = newX;
+      el.y = newY;
+    }
+
+    // Direct style update without destroying DOM elements
+    activeDragState.element.style.left = (newX / 842 * 100) + '%';
+    activeDragState.element.style.top = (newY / 595 * 100) + '%';
+
+    if ($('inspectorX')) $('inspectorX').value = newX;
+    if ($('inspectorY')) $('inspectorY').value = newY;
+
+    if (coordBadge) {
+      coordBadge.classList.remove('hidden');
+      coordBadge.innerHTML = `X: ${newX} ${isCenterSnap ? '<b style="color:#60a5fa;">[CENTER]</b>' : ''} &bull; Y: ${newY}`;
+      coordBadge.style.left = (newX / 842 * 100) + '%';
+      coordBadge.style.top = (Math.max(20, newY - 26) / 595 * 100) + '%';
+    }
   };
 
-  const onMove=(clientX,clientY)=>{
-    if(!isDragging)return;
-    const canvas=$('certCanvas');
-    const rect=canvas.getBoundingClientRect();
-    const scaleX=842/rect.width;
-    const scaleY=595/rect.height;
-    
-    const deltaX=(clientX-startX)*scaleX;
-    const deltaY=(clientY-startY)*scaleY;
-    
-    let newX=Math.round(initialElX+deltaX);
-    let newY=Math.round(initialElY+deltaY);
-    
-    // Bounds check
-    newX=Math.max(40, Math.min(802, newX));
-    newY=Math.max(30, Math.min(565, newY));
-    
-    currentTemplate.layout.elements[idx].x=newX;
-    currentTemplate.layout.elements[idx].y=newY;
-    
-    // Quick DOM reposition
-    element.style.left=(newX/842*100)+'%';
-    element.style.top=(newY/595*100)+'%';
-    
-    $('inspectorX').value=newX;
-    $('inspectorY').value=newY;
-  };
-
-  const onEnd=()=>{
-    if(!isDragging)return;
-    isDragging=false;
+  const handlePointerEnd = () => {
+    if (!activeDragState) return;
+    activeDragState = null;
+    if (snapGuide) snapGuide.classList.add('hidden');
+    if (coordBadge) coordBadge.classList.add('hidden');
     pushHistory();
     renderCanvas();
   };
 
-  element.addEventListener('mousedown',e=>{onStart(e.clientX,e.clientY);e.preventDefault()});
-  window.addEventListener('mousemove',e=>onMove(e.clientX,e.clientY));
-  window.addEventListener('mouseup',onEnd);
-  
-  element.addEventListener('touchstart',e=>{
-    const t=e.touches[0];
-    onStart(t.clientX,t.clientY);
-  },{passive:true});
-  window.addEventListener('touchmove',e=>{
-    if(isDragging){
-      const t=e.touches[0];
-      onMove(t.clientX,t.clientY);
+  window.addEventListener('mousemove', e => handlePointerMove(e.clientX, e.clientY));
+  window.addEventListener('mouseup', handlePointerEnd);
+
+  window.addEventListener('touchmove', e => {
+    if (activeDragState && e.touches.length > 0) {
+      handlePointerMove(e.touches[0].clientX, e.touches[0].clientY);
     }
-  },{passive:true});
-  window.addEventListener('touchend',onEnd);
+  }, { passive: true });
+  window.addEventListener('touchend', handlePointerEnd);
+
+  // Global Keyboard Navigation for Canvas Selection
+  window.addEventListener('keydown', e => {
+    if (selectedElementIndex === null || !currentTemplate) return;
+    if (['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement?.tagName)) return;
+
+    const el = currentTemplate.layout.elements[selectedElementIndex];
+    if (!el) return;
+    const step = e.shiftKey ? 10 : 1;
+
+    if (e.key === 'ArrowLeft') {
+      el.x = Math.max(30, (el.x || 421) - step);
+      e.preventDefault();
+    } else if (e.key === 'ArrowRight') {
+      el.x = Math.min(812, (el.x || 421) + step);
+      e.preventDefault();
+    } else if (e.key === 'ArrowUp') {
+      el.y = Math.max(25, (el.y || 300) - step);
+      e.preventDefault();
+    } else if (e.key === 'ArrowDown') {
+      el.y = Math.min(570, (el.y || 300) + step);
+      e.preventDefault();
+    } else if (e.key === 'Delete' || e.key === 'Backspace') {
+      currentTemplate.layout.elements.splice(selectedElementIndex, 1);
+      deselectInspector();
+      pushHistory();
+      renderCanvas();
+      flash('Field removed from canvas.');
+      e.preventDefault();
+      return;
+    } else {
+      return;
+    }
+
+    if ($('inspectorX')) $('inspectorX').value = el.x;
+    if ($('inspectorY')) $('inspectorY').value = el.y;
+    renderCanvas();
+  });
+}
+
+function attachDrag(element, idx){
+  element.addEventListener('mousedown', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    selectElement(idx);
+    activeDragState = {
+      idx,
+      element,
+      startX: e.clientX,
+      startY: e.clientY,
+      initialX: currentTemplate.layout.elements[idx].x,
+      initialY: currentTemplate.layout.elements[idx].y
+    };
+  });
+
+  element.addEventListener('touchstart', e => {
+    if (e.touches.length > 0) {
+      selectElement(idx);
+      activeDragState = {
+        idx,
+        element,
+        startX: e.touches[0].clientX,
+        startY: e.touches[0].clientY,
+        initialX: currentTemplate.layout.elements[idx].x,
+        initialY: currentTemplate.layout.elements[idx].y
+      };
+    }
+  }, { passive: true });
 }
 
 // Field Inspector Controls
@@ -512,6 +685,28 @@ $('inspectorRemoveBtn').onclick=()=>{
   renderCanvas();
   flash('Field removed from canvas.');
 };
+
+if ($('inspectorCenterHBtn')) {
+  $('inspectorCenterHBtn').onclick = () => {
+    if (selectedElementIndex === null || !currentTemplate) return;
+    currentTemplate.layout.elements[selectedElementIndex].x = 421;
+    $('inspectorX').value = 421;
+    pushHistory();
+    renderCanvas();
+    flash('Snapped to horizontal center (X: 421).');
+  };
+}
+
+if ($('inspectorCenterVBtn')) {
+  $('inspectorCenterVBtn').onclick = () => {
+    if (selectedElementIndex === null || !currentTemplate) return;
+    currentTemplate.layout.elements[selectedElementIndex].y = 298;
+    $('inspectorY').value = 298;
+    pushHistory();
+    renderCanvas();
+    flash('Snapped to vertical center (Y: 298).');
+  };
+}
 
 // Insert Dynamic Fields
 window.insertField=(fieldKey,label)=>{
@@ -662,6 +857,30 @@ $('templateExportBtn').onclick=()=>{
   URL.revokeObjectURL(url);
   flash('Template layout exported to JSON.');
 };
+
+// Restore Original Classic Template & Coordinates
+if ($('templateRestoreOriginalBtn')) {
+  $('templateRestoreOriginalBtn').onclick = async () => {
+    if (!currentTemplate) return;
+    if (!confirm(`Restore template "${currentTemplate.name}" to factory-calibrated classic layout?\n\nThis will remove any custom background stationery, restore classic gold & navy multi-tier borders, and reset all dynamic fields to institutional default coordinates.`)) return;
+    try {
+      const restored = await api(`/api/admin/templates/${currentTemplate.id}/reset-default`, { method: 'POST' });
+      const idx = templatesList.findIndex(t => t.id === restored.id);
+      if (idx !== -1) templatesList[idx] = restored;
+      currentTemplate = JSON.parse(JSON.stringify(restored));
+      if (typeof currentTemplate.layoutJson === 'string') {
+        currentTemplate.layout = JSON.parse(currentTemplate.layoutJson);
+      }
+      historyStack = [JSON.stringify(currentTemplate.layout)];
+      selectedElementIndex = null;
+      renderCanvas();
+      deselectInspector();
+      flash('Template restored to factory classic design with default borders.');
+    } catch (err) {
+      flash('Failed to restore template: ' + err.message, 'error');
+    }
+  };
+}
 
 // Clear Custom Background
 $('templateClearBgBtn').onclick=async()=>{
@@ -857,6 +1076,7 @@ $('confirmImportBtn').onclick=async()=>{
 // Initial boot
 (async()=>{
   try{
+    initCanvasDragEngine();
     await Promise.all([loadEvents(),loadUsers()]);
   }catch(e){flash(e.message,'error')}
 })();

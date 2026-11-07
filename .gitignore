@@ -29,6 +29,8 @@ id_ed25519*
 *classmates*
 private/
 data/private/
+src/main/resources/db/migration/*fix_student_names*
+src/main/resources/db/migration/*real_students*
 
 # Generated Artifacts & QR Codes
 *.pdf
@@ -37,6 +39,13 @@ qr-codes/
 exports/
 badges/
 certificates_out/
+
+# Local UI Backups & Revert Dumps
+*backup*/
+backup_*/
+
+# AI Agent Workspaces & Prompts
+.agents/
 
 # Environment files and credentials
 .env

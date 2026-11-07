@@ -8,4 +8,6 @@ public interface CertificateRepository extends JpaRepository<Certificate, Long> 
     Optional<Certificate> findByCertificateId(String certificateId);
     Optional<Certificate> findByRegistrationId(Long registrationId);
     List<Certificate> findByRegistrationEventId(Long eventId);
+    long countByRegistrationEventId(Long eventId);
+    long countByStatus(org.eventproof.common.DomainEnums.CertificateStatus status);
 }
